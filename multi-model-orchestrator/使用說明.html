@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Model Orchestrator — 使用說明</title>
+<style>
+  :root{
+    --ink:#1a1a2e; --sub:#5c5c72; --bg:#f7f7fb; --card:#ffffff;
+    --accent:#5b4fd6; --accent-soft:#eeecfb; --line:#e4e4ee;
+    --code-bg:#16162a; --code-ink:#d5d5f0; --ok:#1f8a5b; --warn:#b45309;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.75;padding:0 0 80px;}
+  .wrap{max-width:860px;margin:0 auto;padding:0 24px;}
+  header{background:linear-gradient(135deg,#1a1a2e 0%,#2d2b55 60%,#5b4fd6 130%);
+         color:#fff;padding:56px 0 48px;margin-bottom:40px;}
+  header .wrap{max-width:860px;}
+  .tag{display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);
+       border-radius:999px;padding:2px 14px;font-size:13px;letter-spacing:.5px;margin-bottom:14px;}
+  h1{font-size:30px;font-weight:700;letter-spacing:.5px;}
+  header p{color:#c9c6ef;margin-top:10px;font-size:15px;max-width:640px;}
+  h2{font-size:21px;margin:48px 0 16px;padding-left:12px;border-left:4px solid var(--accent);}
+  h3{font-size:16px;margin:24px 0 8px;color:var(--accent);}
+  p{margin-bottom:12px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:20px 24px;margin-bottom:16px;}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;
+        overflow:hidden;border:1px solid var(--line);font-size:14.5px;margin-bottom:16px;}
+  th{background:var(--accent-soft);text-align:left;padding:10px 14px;font-weight:600;}
+  td{padding:10px 14px;border-top:1px solid var(--line);vertical-align:top;}
+  code{background:var(--accent-soft);color:var(--accent);border-radius:4px;
+       padding:1px 6px;font-size:.9em;font-family:"SF Mono",Menlo,Consolas,monospace;}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:10px;
+      padding:16px 18px;overflow-x:auto;font-size:13.5px;line-height:1.65;
+      font-family:"SF Mono",Menlo,Consolas,monospace;margin:10px 0 18px;white-space:pre-wrap;}
+  pre code{background:none;color:inherit;padding:0;}
+  .label{display:inline-block;font-size:12.5px;font-weight:600;border-radius:6px;
+         padding:1px 10px;margin-bottom:6px;}
+  .label.prompt{background:var(--accent-soft);color:var(--accent);}
+  .label.in{background:#e7f6ee;color:var(--ok);}
+  .label.out{background:#fef3e2;color:var(--warn);}
+  .flow{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:22px 24px;margin-bottom:16px;font-size:14.5px;}
+  .flow .step{display:flex;gap:12px;margin-bottom:12px;}
+  .flow .n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);
+           color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .muted{color:var(--sub);font-size:13.5px;}
+  ul{margin:0 0 12px 22px;}
+  li{margin-bottom:6px;}
+  .file-tree{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13.5px;line-height:1.9;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="tag">Agent Skill 使用說明 · 2026-07-08</span>
+    <h1>Multi-Model Orchestrator<br>多模型協作指揮系統</h1>
+    <p>讓 Fable 5 當「技術主管」只負責規劃與整合，把深度推理交給 Opus、機械性工作交給 Sonnet、需要不同視角的問題交給 Codex——省下最貴的 Fable 用量，品質不打折。</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<h2>一、功能介紹</h2>
+<div class="card">
+  <p><strong>解決什麼問題：</strong>Fable 5 是最聰明也最貴的模型。如果讓它從頭到尾自己寫 code、跑測試、改格式，大量 token 會花在「不需要頂級智力」的工作上。這套設定把 Fable 5 變成 orchestrator（指揮者）：它只做規劃、拆解、整合、最終判斷，其餘工作分派給更便宜的執行者。</p>
+  <p><strong>團隊分工：</strong></p>
+  <table>
+    <tr><th>角色</th><th>模型</th><th>負責</th></tr>
+    <tr><td>Orchestrator（指揮）</td><td>Fable 5（max reasoning）</td><td>規劃、拆解任務、整合結果、最終決策</td></tr>
+    <tr><td>deep-reasoner</td><td>Opus subagent</td><td>架構設計、複雜除錯、演算法設計等重推理工作</td></tr>
+    <tr><td>fast-worker</td><td>Sonnet subagent</td><td>樣板程式、測試、格式化、簡單修改等機械性工作</td></tr>
+    <tr><td>Codex peer</td><td>OpenAI Codex CLI</td><td>「不同視角」的資深工程師同儕（不是 reviewer）</td></tr>
+  </table>
+  <p><strong>殺手級機制——高風險並行盲測：</strong>遇到重大決策（架構選型、難解的 production bug），同時把<em>同一個問題</em>丟給 Opus 和 Codex，兩邊互相看不到對方的答案。兩者一致 → 高信心執行；兩者分歧 → 分歧點正是風險所在，由 Fable 整合出最佳解。</p>
+  <p><strong>觸發條件：</strong>對 Claude Code 說「用 orchestrator 模式」「當 tech lead」「分派給 subagent」「讓 Opus 想、Sonnet 做」，或直接丟出任何多階段的大型開發任務（新功能、重構、複雜除錯），skill 就會啟動。</p>
+</div>
+
+<h2>二、安裝步驟（Claude Code）</h2>
+<div class="flow">
+  <div class="step"><div class="n">1</div><div>主模型設為 Fable 5：<code>/model</code> → Fable 5，<code>/effort</code> → max</div></div>
+  <div class="step"><div class="n">2</div><div>把 <code>agents/deep-reasoner.md</code> 和 <code>agents/fast-worker.md</code> 複製到 <code>~/.claude/agents/</code>（或專案的 <code>.claude/agents/</code>）</div></div>
+  <div class="step"><div class="n">3</div><div>安裝 Codex plugin（需先裝 Codex CLI）：<br><code>/plugin marketplace add openai/codex-plugin-cc</code> → <code>/plugin install codex@openai-codex</code> → <code>/codex:setup</code></div></div>
+  <div class="step"><div class="n">4</div><div>把 <code>multi-model-orchestrator/</code> 資料夾複製到 <code>~/.claude/skills/</code></div></div>
+  <div class="step"><div class="n">5</div><div>把 <code>CLAUDE-md-snippet.md</code> 的內容貼進專案的 <code>CLAUDE.md</code></div></div>
+</div>
+<p class="muted">skill 負責定義「怎麼指揮」，CLAUDE.md 片段確保每個新 session 預設就用這套流程，兩者搭配使用。沒裝 Codex 也能用——skill 內建 fallback，會改用兩個獨立的 deep-reasoner 做盲測。</p>
+
+<h2>三、Prompt 範例（可直接複製）</h2>
+
+<h3>範例 1：標準 tech-lead 指令（開發新功能）</h3>
+<div class="card">
+  <span class="label prompt">PROMPT</span>
+  <pre><code>Goal: 幫 user dashboard 加上 CSV 匯出功能，支援目前所有篩選條件
+Context: 前端在 src/pages/Dashboard.tsx，API 在 server/routes/reports.ts，
+篩選邏輯已存在，不要動現有的查詢行為
+You're the lead. Delegate reasoning to deep-reasoner, grunt work to
+fast-worker, fresh-perspective problems to Codex. Show me your plan first,
+then execute.</code></pre>
+  <p class="muted">重點：給 Goal + Context + 授權分工，最後要求「先給計畫再動手」。</p>
+</div>
+
+<h3>範例 2：高風險決策（並行盲測）</h3>
+<div class="card">
+  <span class="label prompt">PROMPT</span>
+  <pre><code>我們的訂單服務要從單體拆出來，在「事件驅動（Kafka）」和「同步 API +
+outbox pattern」之間猶豫。這是高風險架構決策：請把同樣的問題和 context
+同時丟給 deep-reasoner 和 Codex，不要讓任何一方看到另一方的答案，
+拿回來之後比較兩邊的結論、指出分歧點，再給我你整合後的建議。
+Context 在 docs/architecture.md 和 server/services/orders/。</code></pre>
+  <p class="muted">重點：明確說「高風險」＋「並行盲測」，觸發 skill 的 high-stakes protocol。</p>
+</div>
+
+<h3>範例 3：複雜除錯（省 Fable 用量）</h3>
+<div class="card">
+  <span class="label prompt">PROMPT</span>
+  <pre><code>Production 上偶發的 race condition：付款成功但訂單狀態卡在 pending，
+log 在 logs/payment-0706.txt。用 orchestrator 模式處理——
+讓 deep-reasoner 去讀 log 和相關 code 做診斷（只要回報結論，不要整份
+探索過程），確定 root cause 之後把修復 patch 和 regression test 派給
+fast-worker。你自己只負責把關和最終確認。</code></pre>
+  <p class="muted">重點：明確要求「結論不要過程」，保持 orchestrator context 精簡。</p>
+</div>
+
+<h3>範例 4：大量機械性修改</h3>
+<div class="card">
+  <span class="label prompt">PROMPT</span>
+  <pre><code>把 src/ 底下所有還在用舊版 logger（console.log 和 winston 直呼）的地方
+改成我們的新 wrapper（lib/logger.ts）。這是純機械性工作，直接全部派給
+fast-worker 分批處理，你只要抽查結果和確認測試通過。</code></pre>
+  <p class="muted">重點：使用者自己先判斷是機械性工作，orchestrator 只做抽查，成本最低。</p>
+</div>
+
+<h2>四、實際 Use Case 示範</h2>
+
+<h3>Use Case A：新功能開發（範例 1 的完整流程）</h3>
+<div class="card">
+  <span class="label in">輸入</span>
+  <p>範例 1 的 prompt（CSV 匯出功能）。</p>
+  <span class="label out">產出</span>
+  <div class="flow" style="border:none;padding:12px 0 0;margin:0;">
+    <div class="step"><div class="n">1</div><div>Fable 先回覆計畫：「① deep-reasoner 評估匯出策略（streaming vs 一次性）→ 驗證：回報建議＋風險 ② fast-worker 實作 API endpoint＋前端按鈕 → 驗證：既有測試全過＋新增測試 ③ 我整合並確認篩選條件正確帶入」</div></div>
+    <div class="step"><div class="n">2</div><div>你回「go」之後，Fable 依序派工，最後回報：改了哪些檔案、deep-reasoner 的關鍵決策理由、測試結果。</div></div>
+  </div>
+  <p class="muted">效果：Fable 本體只花了規劃＋整合的 token，程式碼探索和撰寫都由 Opus/Sonnet 消化。</p>
+</div>
+
+<h3>Use Case B：架構決策（範例 2 的完整流程）</h3>
+<div class="card">
+  <span class="label in">輸入</span>
+  <p>範例 2 的 prompt（Kafka vs outbox pattern）。</p>
+  <span class="label out">產出</span>
+  <p>Fable 回報類似：「deep-reasoner 建議 outbox（理由：團隊沒有 Kafka 維運經驗、訊息量不高）；Codex 建議 Kafka（理由：未來要接三個下游系統）。<strong>分歧點在於你們對下游擴張的時程假設</strong>——如果 12 個月內確定要接多個消費端，Codex 的方向對；否則 outbox 的維運成本低得多。我的整合建議：先 outbox，但 schema 設計預留事件化空間。」</p>
+  <p class="muted">效果：兩個頂級模型的獨立判斷 + 分歧分析，比單一模型自我審查可靠得多。</p>
+</div>
+
+<h3>Use Case C：Codex 沒裝的 fallback</h3>
+<div class="card">
+  <span class="label in">輸入</span>
+  <p>同範例 2，但機器上沒有 Codex CLI。</p>
+  <span class="label out">產出</span>
+  <p>Fable 明確告知「Codex 不可用」，改開兩個互相隔離的 deep-reasoner subagent 做盲測，其餘流程不變。不會假裝有問過 Codex。</p>
+</div>
+
+<h2>五、檔案結構</h2>
+<div class="card file-tree">
+Multi-Model-Orchestrator-2026-07-08/<br>
+├── multi-model-orchestrator/<br>
+│&nbsp;&nbsp;&nbsp;└── SKILL.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 主 skill（複製到 ~/.claude/skills/）<br>
+├── agents/<br>
+│&nbsp;&nbsp;&nbsp;├── deep-reasoner.md&nbsp;&nbsp;&nbsp;← Opus subagent（複製到 ~/.claude/agents/）<br>
+│&nbsp;&nbsp;&nbsp;└── fast-worker.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← Sonnet subagent（同上）<br>
+├── CLAUDE-md-snippet.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 貼進專案 CLAUDE.md 的段落<br>
+├── SETUP.md&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 英/中安裝步驟<br>
+└── 使用說明.html&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 本文件
+</div>
+
+<h2>六、使用心法</h2>
+<div class="card">
+  <ul>
+    <li><strong>按認知負荷拆工，不是按檔案拆工。</strong>「需要想」的給 deep-reasoner，「答案已知、只是要做」的給 fast-worker。</li>
+    <li><strong>永遠要求結論、不要過程。</strong>orchestrator 的 context 是最貴的資源，subagent 回報越精簡越好。</li>
+    <li><strong>Codex 是同儕不是 reviewer。</strong>讓它獨立解題，而不是審查別人的答案——獨立性才會暴露真正的分歧。</li>
+    <li><strong>小任務不要 orchestrate。</strong>單一明顯的修改直接做就好，分派的 overhead 要划得來。</li>
+  </ul>
+</div>
+
+<p class="muted" style="margin-top:40px;">Multi-Model Orchestrator · 2026-07-08 · 07-08-Skill-Designer-EKC</p>
+
+</div>
+</body>
+</html>

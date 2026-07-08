@@ -1,0 +1,62 @@
+# Tenten Skills
+
+[English](./README.md) · [繁體中文](./README.zh-TW.md) · **简体中文** · [日本語](./README.ja.md)
+
+[Tenten](https://tenten.co) 每天实际在用的 Agent Skills，公开分享。
+
+## 为什么做这个仓库
+
+在 Tenten，我们相信 Agent Skills 正在成为知识分享的新单位。一个写得好的 skill，能把有经验的人处理一件事的方式——流程、判断、坑点——封装成任何 AI agent 都能重复执行的形式。
+
+我们在内部为真实工作设计、测试、迭代这些 skills：工程、项目管理、营销、内容、客户交付。这个仓库是这些成果的公开长期记录——之后所有能公开的 skills 都会持续收录到这里，让这个集合不断成长。
+
+公开分享，是因为 skills 在开放环境中会变得更好。欢迎 fork、改成适合你们技术栈的版本，也欢迎反馈问题。
+
+## 快速开始
+
+用 [skills.sh](https://skills.sh) 安装器：
+
+```bash
+npx skills@latest add tentenco/skills
+```
+
+或手动安装——把任一 skill 文件夹复制到 agent 的 skills 目录：
+
+```bash
+# Claude Code（全局）
+cp -r skills/engineering/multi-model-orchestrator ~/.claude/skills/
+
+# 或单个项目
+cp -r skills/engineering/multi-model-orchestrator <project>/.claude/skills/
+```
+
+部分 skills 附带额外组件（subagent 定义、CLAUDE.md 片段）。需要额外步骤的 skill 文件夹内都有 `SETUP.md`。
+
+## 仓库结构
+
+```
+skills/
+└── <category>/                  # engineering、pm、marketing、productivity…
+    └── <skill-name>/
+        ├── SKILL.md             # skill 本体（frontmatter + 指令）
+        ├── SETUP.md             # 安装步骤（如有需要）
+        ├── agents/              # 附带的 subagent 定义（如有）
+        ├── scripts/             # 附带的可执行工具（如有）
+        └── 使用說明.html         # 繁体中文使用说明，含可复制的 prompt 示例
+```
+
+每个 skill 都是自包含的：一个文件夹、所需的一切，加上一份含 prompt 示例、真人可读的使用说明。
+
+## Skills 目录
+
+### Engineering（工程）
+
+| Skill | 说明 |
+|-------|------|
+| [multi-model-orchestrator](./skills/engineering/multi-model-orchestrator/SKILL.md) | 把复杂开发任务交给多模型团队执行：主模型担任 tech-lead 指挥者，深度推理派给 Opus subagent、机械性工作派给 Sonnet subagent、需要不同视角的问题交给 Codex 盲测同侪。省下顶级模型用量，质量不打折。 |
+
+*之后发布更多 skills 时，会陆续增加 PM、营销、生产力等分类。*
+
+## 许可证
+
+MIT — 见 [LICENSE](./LICENSE)。
